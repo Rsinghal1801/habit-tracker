@@ -1,0 +1,231 @@
+/* =====================================================================
+   Habits — Habit Tracker (PWA)
+   Design language: calm + rhythmic. A deep aubergine night, a single
+   "sunrise" gradient (amber → pink) that only appears on things you've
+   *earned* (completed days, streaks, the progress ring). The signature is
+   the heatmap grid under each habit that fills with sunrise as you go.
+   Outfit (rounded, friendly) for display; Inter for body.
+   ===================================================================== */
+
+:root {
+  --bg:       #14111d;
+  --surface:  #1e1a2b;
+  --surface-2:#262136;
+  --line:     #322b46;
+  --line-soft:#2a2440;
+
+  --text:     #f0ecf7;
+  --text-dim: #a99fc0;
+  --text-faint:#6f6688;
+
+  --sun-a:    #ffb347;
+  --sun-b:    #ff6b9d;
+  --sunrise:  linear-gradient(120deg, #ffb347, #ff6b9d);
+  --teal:     #2dd4bf;
+
+  --radius:   20px;
+  --radius-sm:14px;
+  --shadow:   0 24px 60px -30px rgba(0,0,0,0.8);
+
+  --sans: "Inter", system-ui, sans-serif;
+  --display: "Outfit", system-ui, sans-serif;
+
+  --grid-empty: #2a2440;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--sans);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(255,107,157,0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 0%, rgba(255,179,71,0.08), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.figure { font-variant-numeric: tabular-nums; }
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: max(20px, env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Header ---------- */
+.head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 22px; }
+.head__brand { display: flex; align-items: center; gap: 13px; }
+.head__mark { width: 42px; height: 42px; display: grid; place-items: center; background: var(--surface); border-radius: 13px; border: 1px solid var(--line); }
+.head__mark svg { width: 26px; height: 26px; }
+.head__title { font-family: var(--display); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.head__date { font-size: 0.82rem; color: var(--text-faint); }
+
+.add-btn {
+  width: 46px; height: 46px; border-radius: 14px; border: none; cursor: pointer;
+  background: var(--sunrise); display: grid; place-items: center;
+  box-shadow: 0 10px 24px -10px rgba(255,107,157,0.6);
+  transition: transform 0.14s;
+}
+.add-btn svg { width: 22px; height: 22px; fill: #2a1020; }
+.add-btn:active { transform: scale(0.94); }
+
+/* ---------- Install banner ---------- */
+.install {
+  display: flex; align-items: center; gap: 12px; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 13px 16px; margin-bottom: 18px;
+  font-size: 0.88rem; color: var(--text-dim);
+}
+.install__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.install__btn { background: var(--sunrise); color: #2a1020; border: none; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-family: inherit; }
+.install__dismiss { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 1rem; }
+
+/* ---------- Summary ring ---------- */
+.summary {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px;
+}
+.ring { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
+.ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.ring__track { fill: none; stroke: var(--surface-2); stroke-width: 9; }
+.ring__fill {
+  fill: none; stroke: url(#ringGrad); stroke-width: 9; stroke-linecap: round;
+  stroke-dasharray: 327; stroke-dashoffset: 327;
+  transition: stroke-dashoffset 0.8s cubic-bezier(.2,.8,.2,1);
+}
+.ring__center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring__pct { font-family: var(--display); font-size: 1.5rem; font-weight: 600; }
+.ring__cap { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-faint); }
+.summary__line { font-family: var(--display); font-size: 1.2rem; font-weight: 500; }
+.summary__sub { font-size: 0.88rem; color: var(--text-dim); margin-top: 3px; }
+
+/* ---------- Habit card ---------- */
+.habits { display: flex; flex-direction: column; gap: 14px; }
+.habit {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 18px 16px;
+  animation: rise 0.4s ease both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+.habit__top { display: flex; align-items: center; gap: 13px; }
+.habit__emoji {
+  width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
+  font-size: 1.4rem; flex-shrink: 0;
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.habit__info { flex: 1; min-width: 0; }
+.habit__name { font-family: var(--display); font-weight: 600; font-size: 1.06rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.habit__stats { font-size: 0.82rem; color: var(--text-dim); display: flex; gap: 12px; margin-top: 1px; }
+.habit__stats b { color: var(--text); }
+.flame { color: var(--sun-a); }
+
+.check {
+  width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0; cursor: pointer;
+  border: 2px solid var(--line); background: var(--surface-2);
+  display: grid; place-items: center; transition: transform 0.16s, border-color 0.2s, background 0.2s;
+}
+.check svg { width: 24px; height: 24px; fill: none; stroke: var(--text-faint); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+.check.is-done { background: var(--sunrise); border-color: transparent; }
+.check.is-done svg { stroke: #2a1020; }
+.check:active { transform: scale(0.9); }
+.check.pop { animation: pop 0.4s; }
+@keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.18)} 100%{transform:scale(1)} }
+
+/* ---------- Heatmap ---------- */
+.heat { display: flex; gap: 3px; margin-top: 16px; overflow: hidden; }
+.heat__col { display: flex; flex-direction: column; gap: 3px; }
+.heat__cell {
+  width: 100%; aspect-ratio: 1; border-radius: 3px; background: var(--grid-empty);
+  min-width: 9px;
+}
+.heat__cell.lit { background: var(--cell, var(--sunrise)); }
+.heat__cell.today { box-shadow: 0 0 0 1.5px var(--teal); }
+.heat__foot { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-faint); margin-top: 9px; }
+
+.habit__menu { background: none; border: none; color: var(--text-faint); cursor: pointer; padding: 6px; font-size: 1.1rem; line-height: 1; }
+.habit__menu:hover { color: var(--text); }
+
+/* ---------- Empty state ---------- */
+.empty { text-align: center; padding: 50px 24px; }
+.empty__art { font-size: 3rem; margin-bottom: 8px; }
+.empty h2 { font-family: var(--display); font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; }
+.empty p { color: var(--text-dim); max-width: 36ch; margin: 0 auto 20px; }
+
+/* ---------- Buttons ---------- */
+.primary-btn, .ghost-btn { font-family: inherit; cursor: pointer; }
+.primary-btn {
+  background: var(--sunrise); color: #2a1020; border: none; font-weight: 600;
+  padding: 12px 22px; border-radius: 13px; font-size: 0.94rem;
+  box-shadow: 0 10px 24px -12px rgba(255,107,157,0.6);
+}
+.ghost-btn {
+  background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--line);
+  padding: 11px 18px; border-radius: 13px; font-size: 0.9rem; font-weight: 500;
+}
+.ghost-btn:hover { color: var(--text); }
+#deleteBtn:hover { color: var(--sun-b); border-color: var(--sun-b); }
+
+/* ---------- Bottom sheet ---------- */
+.sheet { position: fixed; inset: 0; z-index: 60; display: none; }
+.sheet.is-open { display: block; }
+.sheet__scrim { position: absolute; inset: 0; background: rgba(8,6,14,0.6); backdrop-filter: blur(3px); animation: fade 0.25s; }
+.sheet__card {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-width: 560px; margin: 0 auto;
+  background: var(--surface); border: 1px solid var(--line); border-bottom: none;
+  border-radius: 26px 26px 0 0; padding: 14px 22px calc(26px + env(safe-area-inset-bottom));
+  box-shadow: var(--shadow); animation: slideUp 0.32s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes fade { from { opacity: 0; } }
+@keyframes slideUp { from { transform: translateY(100%); } }
+.sheet__grab { width: 40px; height: 4px; border-radius: 999px; background: var(--line); margin: 4px auto 16px; }
+.sheet__card h2 { font-family: var(--display); font-size: 1.3rem; font-weight: 600; margin-bottom: 18px; }
+
+/* ---------- Form ---------- */
+.form { display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 9px; }
+.field > span { font-size: 0.84rem; color: var(--text-dim); font-weight: 500; }
+.field input[type="text"] {
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 13px;
+  padding: 13px 15px; color: var(--text); font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s;
+}
+.field input[type="text"]:focus { border-color: var(--sun-b); }
+
+.emoji-row, .color-row { display: flex; gap: 9px; flex-wrap: wrap; }
+.emoji-pick {
+  width: 46px; height: 46px; border-radius: 13px; border: 2px solid var(--line);
+  background: var(--surface-2); font-size: 1.3rem; cursor: pointer; display: grid; place-items: center;
+  transition: border-color 0.15s, transform 0.12s;
+}
+.emoji-pick.is-active { border-color: var(--sun-b); }
+.emoji-pick:active { transform: scale(0.92); }
+.color-pick { width: 38px; height: 38px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: transform 0.12s; }
+.color-pick.is-active { border-color: var(--text); transform: scale(1.08); }
+
+.form__actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translate(-50%, 160%);
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--line);
+  padding: 12px 20px; border-radius: 999px; font-size: 0.9rem; font-weight: 500;
+  box-shadow: var(--shadow); z-index: 80; transition: transform 0.36s cubic-bezier(.2,.8,.2,1);
+}
+.toast.is-show { transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--sun-b); outline-offset: 3px; }
+
+@media (min-width: 600px) {
+  .heat__cell { min-width: 11px; }
+}
